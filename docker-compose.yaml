@@ -1,0 +1,39 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: springboot-mysql
+    environment: 
+      MYSQL_ROOT_PASSWORD: root
+    volumes: 
+      - "./volumes/mysql/data:/var/lib/mysql"
+      - "./volumes/mysql/log:/var/log/mysql"
+    ports: 
+      - "33061:3306"
+    restart: always
+
+  app:
+    build: .
+    container_name: springboot-app
+    working_dir: /app
+    volumes:
+        - .:/app
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    command: ./mvnw clean spring-boot:run
+    depends_on: 
+      - mysql
+
+  nginx:
+    container_name: springboot-nginx
+    image: nginx:1.13
+    restart: always
+    ports:
+      - 8088:80
+      - 443:443
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
